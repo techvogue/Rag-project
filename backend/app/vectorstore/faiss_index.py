@@ -27,24 +27,44 @@ async def add_document_embeddings(doc_id: str, chunks: List[str]):
     index_path = os.path.join(INDEX_DIR, doc_id)
     vectorstore.save_local(index_path)
 
-# 🔹 Search FAISS index by question using LangChain
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+
+# 🔹 Search FAISS index by question using Hybrid Search (EnsembleRetriever)
 async def search_faiss_by_document(document_id: str, query: str, top_k: int = 5) -> List[dict]:
     index_path = os.path.join(INDEX_DIR, document_id)
     
     if not os.path.exists(index_path):
         return []
 
-    # Load the vectorstore. allow_dangerous_deserialization is required for local pickle files.
+    # Load the vectorstore
     vectorstore = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
     
-    # Perform similarity search
-    results = vectorstore.similarity_search_with_score(query, k=top_k)
+    # Create FAISS retriever
+    faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": top_k})
     
+    # Reconstruct documents for BM25 retriever
+    all_docs = list(vectorstore.docstore._dict.values())
+    if not all_docs:
+        return []
+        
+    bm25_retriever = BM25Retriever.from_documents(all_docs)
+    bm25_retriever.k = top_k
+    
+    # Combine both retrievers with equal weighting
+    ensemble_retriever = EnsembleRetriever(
+        retrievers=[bm25_retriever, faiss_retriever], weights=[0.5, 0.5]
+    )
+    
+    # Perform hybrid search
+    results = ensemble_retriever.invoke(query)
+    
+    # Limit to top_k and format
     formatted_results = []
-    for doc, score in results:
+    for doc in results[:top_k]:
         formatted_results.append({
             "text": doc.page_content,
-            "distance": float(score)
+            "distance": 0.0 # Distance isn't easily extracted from EnsembleRetriever
         })
         
     return formatted_results

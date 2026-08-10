@@ -28,9 +28,12 @@ async def stream_answer(query: str, document_id: str, chat_history: List[Any] = 
         yield "Sorry, I couldn't find relevant information in the document."
         return
 
-    # Combine the text from the most relevant chunks
-    relevant_texts = [result["text"] for result in search_results]
-    context = "\n\n".join(relevant_texts)
+    # Combine the text from the most relevant chunks with Source tags
+    context_parts = []
+    for i, result in enumerate(search_results):
+        context_parts.append(f"[Source {i+1}]:\n{result['text']}")
+        
+    context = "\n\n".join(context_parts)
 
     # Format the past 3 turns into a string for memory
     history_text = "No previous chat history."
@@ -41,7 +44,8 @@ async def stream_answer(query: str, document_id: str, chat_history: List[Any] = 
 
     # Prepare the prompt with context, history, and the query
     prompt_template = PromptTemplate.from_template(
-        "You are an AI assistant answering questions based on the provided document context.\n\n"
+        "You are an AI assistant answering questions based on the provided document context.\n"
+        "IMPORTANT: When you use information from the context, you MUST cite the source using the [Source X] format at the end of the relevant sentence.\n\n"
         "--- Chat History ---\n{history}\n"
         "--- Document Context ---\n{context}\n\n"
         "--- Current Question ---\n{query}\n\n"
@@ -58,6 +62,13 @@ async def stream_answer(query: str, document_id: str, chat_history: List[Any] = 
         # Use LangChain to stream the answer
         async for chunk in llm.astream(prompt_value):
             yield chunk.content
+            
+        # After the LLM finishes, yield the sources at the bottom!
+        yield "\n\n---\n**Sources used:**\n"
+        for i, result in enumerate(search_results):
+            # Show a snippet of the source
+            snippet = result['text'][:150].replace('\n', ' ') + "..."
+            yield f"- **[Source {i+1}]**: {snippet}\n"
 
     except Exception as e:
         print(f"Error generating answer: {e}")

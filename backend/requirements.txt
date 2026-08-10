@@ -27,3 +27,4 @@ langchain
 langchain-community
 langchain-cohere
 langchain-mongodb
+rank_bm25
