@@ -76,3 +76,14 @@ InsightFlow is a heavily interactive, authenticated dashboard application where 
 - *Server-Sent Events (SSE)*: Uni-directional stream from server to client.
 **Reasoning**:
 Modern users expect AI chatbots to type out responses token-by-token (like ChatGPT) to reduce perceived latency. WebSockets were evaluated but deemed overkill since chat generation only requires server-to-client streaming. SSE via FastAPI's `StreamingResponse` and the native JS `fetch` API (`ReadableStream`) provides the exact typing-effect functionality with significantly less overhead than WebSockets.
+
+---
+
+## 8. Retrieval Engine
+**Decision**: **Hybrid Search (FAISS + BM25 via LangChain EnsembleRetriever)**
+**Options Evaluated**:
+- *Semantic Vector Search only (FAISS)*: Matches concepts and synonyms. Excellent for "what is the general idea of X?" but notoriously misses exact part numbers, specific names, or rare acronyms.
+- *Keyword Search only (BM25)*: Matches exact words. Excellent for exact phrase lookup but fails if the user uses a synonym.
+- *Hybrid Search*: Combines both strategies and mathematically ranks the results using Reciprocal Rank Fusion (RRF).
+**Reasoning**:
+To provide a bulletproof RAG system, the AI must not miss highly specific details (like an invoice number) while still understanding broad conceptual questions. By extracting the raw text chunks from the FAISS docstore and feeding them into an in-memory `BM25Retriever`, we achieved full Hybrid Search without needing a heavy Elasticsearch or Pinecone setup. The LangChain `EnsembleRetriever` handles the merging and weighting (50/50) of both engines effortlessly.
