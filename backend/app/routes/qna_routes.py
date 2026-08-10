@@ -3,7 +3,7 @@ from typing import List
 from beanie import PydanticObjectId
 from fastapi.responses import StreamingResponse
 
-from app.schemas.qna_schema import QADocumentSchema, QAItemSchema
+from app.schemas.qna_schema import QAItemSchema
 from app.models.user_model import User
 from app.utils.get_current_user import get_current_user
 from app.handlers.qna_handler import process_qa_stream

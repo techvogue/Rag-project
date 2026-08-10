@@ -2,10 +2,9 @@ from app.services.llm_service import stream_answer
 from app.services.fallback_service import fallback_answer
 from app.models.qna_model import QADocument, QAItem
 from datetime import datetime, timezone
-from fastapi import HTTPException
-from app.schemas.auth_schema import UserResponse
+from app.models.user_model import User
 
-async def process_qa_stream(document_id: str, question: str, current_user: UserResponse):
+async def process_qa_stream(document_id: str, question: str, current_user: User):
     # Fetch or create the document for storing Q&A FIRST so we can use it as memory
     qaDocument = await QADocument.find_one(QADocument.document_id == str(document_id))
     if not qaDocument:
