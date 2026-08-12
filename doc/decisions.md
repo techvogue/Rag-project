@@ -39,11 +39,10 @@ For the initial phases of the project, a heavy distributed cloud vector database
 ## 4. Chunking Strategy
 **Decision**: **Semantic Chunking** (LangChain's `RecursiveCharacterTextSplitter`)
 **Options Evaluated**:
-- *Fixed-size Character Chunking*: Splitting text strictly every 500 characters. (Initially used).
-- *Semantic Chunking*: Splitting text based on natural language boundaries (paragraphs, sentences).
+- *Fixed-size Character Chunking*: Splitting text strictly every 500 characters without overlap.
+- *Semantic Chunking*: Splitting text based on natural language boundaries with overlap.
 **Reasoning**:
-Fixed-size chunking is easy to implement but often severs sentences or thoughts directly in the middle, destroying the semantic context of that chunk. By moving to `RecursiveCharacterTextSplitter`, the text is split on double-newlines (`\n\n`) first, then single newlines, then periods. This ensures that the vectors stored in FAISS represent complete, coherent thoughts, drastically improving the accuracy of the Retrieval-Augmented Generation (RAG) system.
-
+Fixed-size chunking is easy to implement but often severs sentences or thoughts directly in the middle, destroying the semantic context of that chunk. We implemented `RecursiveCharacterTextSplitter` configured with a **Chunk Size of 500 characters** and a **Chunk Overlap of 50 characters**. The splitter acts intelligently by trying to split on double-newlines (`\n\n`) first, then single newlines, then periods, ensuring that vectors stored in FAISS represent complete, coherent thoughts. The 50-character overlap guarantees that context is not lost across chunk boundaries, drastically improving the accuracy of the Retrieval-Augmented Generation (RAG) system.
 ---
 
 ## 5. Embedding Model

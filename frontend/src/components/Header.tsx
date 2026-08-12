@@ -11,13 +11,15 @@ const Header = () => {
   }
 
   return (
-    <div>
-    <header className="w-full flex justify-between p-4 bg-white shadow-md">
-        <div className="font-bold text-xl text-gray-700">AI Q&A Tool</div>
+    <>
+      <header className="fixed top-0 left-0 w-full flex justify-between p-4 bg-white shadow-md z-50">
+        <div className="font-bold text-xl text-gray-700">InsightFlow AI</div>
         <button onClick={toggleMenu} className="text-3xl">☰</button>
         <HamburgerMenu isOpen={isMenuOpen} toggleMenu={toggleMenu} />
       </header>
-    </div>
+      {/* Spacer to prevent content from hiding under the fixed header */}
+      <div className="h-16 w-full"></div>
+    </>
   )
 }
 

@@ -1,23 +1,30 @@
-import textract
+import pypdf
+import docx2txt
+import os
 from moviepy import VideoFileClip
 import tempfile
 
-
 async def extract_text_from_document(file_path: str) -> str:
     """
-    Extracts text from a document file using textract.
-
-    Supported formats: PDF, DOCX, TXT, etc.
-
-    Args:
-        file_path (str): Path to the document file.
-
-    Returns:
-        str: Extracted text content.
+    Extracts text from a document file.
+    Supported formats: PDF, DOCX, TXT
     """
     try:
-        text = textract.process(file_path)
-        return text.decode('utf-8')
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == '.pdf':
+            text = ""
+            with open(file_path, 'rb') as file:
+                reader = pypdf.PdfReader(file)
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+            return text
+        elif ext == '.docx':
+            return docx2txt.process(file_path)
+        elif ext == '.txt':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        else:
+            raise ValueError(f"Unsupported file format: {ext}")
     except Exception as e:
         raise RuntimeError(f"Failed to extract text: {str(e)}")
 

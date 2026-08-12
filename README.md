@@ -5,8 +5,10 @@ InsightFlow is an intelligent web application that transcribes, summarizes, and 
 ## 🚀 Key Features
 - **Conversational Memory**: The AI remembers previous context within a session, making follow-up questions feel natural.
 - **Real-Time Streaming UX**: Answers are streamed token-by-token using Server-Sent Events (SSE), just like ChatGPT.
+- **Hybrid Search (FAISS + BM25)**: Combines semantic vector search with keyword search using a custom Reciprocal Rank Fusion (RRF) algorithm for bulletproof accuracy.
+- **Inline Source Citations**: The AI explicitly cites its sources in its answers and provides a formatted list of document snippets it used.
 - **Modern Chat Interface**: A beautiful, responsive frontend with markdown support and message bubbles.
-- **Semantic Chunking**: Intelligently splits documents using LangChain to preserve contextual meaning.
+- **Semantic Chunking**: Intelligently splits documents using LangChain's `RecursiveCharacterTextSplitter` (size 500, overlap 50) to preserve contextual meaning.
 - **Transcribe & Summarize**: Extract text from audio and video files via AssemblyAI and summarize large meetings instantly.
 - **Security & Privacy**: Document confidentiality via AES-256 encryption.
 
@@ -14,7 +16,7 @@ InsightFlow is an intelligent web application that transcribes, summarizes, and 
 - **Frontend**: React 19, Vite, TypeScript, Tailwind CSS v4, React-Markdown
 - **Backend**: FastAPI (Python), LangChain
 - **Database**: MongoDB (Motor & Beanie ODM)
-- **Vector Search**: FAISS (with LangChain integration)
+- **Vector Search**: FAISS & rank_bm25 (Hybrid Ensemble Retrieval)
 - **AI/LLM APIs**: AssemblyAI, Cohere (`embed-english-v3.0`), AI21
 - **Deployment**: Render (backend), Vercel (frontend)
 
@@ -44,7 +46,7 @@ InsightFlow is an intelligent web application that transcribes, summarizes, and 
 4. Set up your `.env` file with the required API keys (Cohere, AssemblyAI, etc.) and MongoDB URI.
 5. Run the backend server:
    ```bash
-   uvicorn main:app --reload
+   uvicorn app.main:app --reload
    ```
 
 ### Frontend (React.js)

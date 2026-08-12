@@ -9,7 +9,7 @@
    - **Documents:** Text is extracted directly using tools like `textract`.
    - **Audio/Video:** Audio is extracted (if video) using `moviepy` or downloaded from YouTube using `yt-dlp`. The audio is then transcribed into text using **AssemblyAI**.
 3. **Security (Optional):** If a user flags a document as confidential, the extracted transcription is encrypted using a user-provided password before being saved to the database.
-4. **Chunking:** The large transcribed text is split into smaller, manageable chunks using a **Fixed-size Chunking Strategy**.
+4. **Chunking:** The large transcribed text is split into smaller, manageable chunks using a **Semantic Chunking Strategy** (RecursiveCharacterTextSplitter).
 5. **Embedding:** Each chunk is converted into a dense vector representation using the **Cohere** embedding model.
 6. **Vector Storage:** The embeddings are saved in a **FAISS** vector index to enable extremely fast similarity searches later.
 7. **Summarization & Notification:** The document is automatically summarized, and the user is sent an email notification confirming the upload and processing.
@@ -36,8 +36,8 @@
 
 ## 3. Core Strategies Used and Why
 
-### A. Fixed-size Character Chunking with Overlap
-* **What it is:** The system splits raw transcriptions into chunks of **500 characters** with an **overlap of 50 characters**.
+### A. Semantic Chunking with RecursiveCharacterTextSplitter
+* **What it is:** The system splits raw transcriptions intelligently based on natural language boundaries (paragraphs, sentences) into chunks of **500 characters** with an **overlap of 50 characters**.
 * **Why:** 
   1. **LLM Context Limits:** Large language models have a maximum token limit. Chunking ensures we only pass the most relevant snippets to the LLM, saving costs and preventing context window overflow.
   2. **Retrieval Precision:** Embedding a 1-hour transcript as a single vector dilutes the specific facts. Smaller chunks mean the embedding vector highly accurately represents the specific information in that paragraph.
